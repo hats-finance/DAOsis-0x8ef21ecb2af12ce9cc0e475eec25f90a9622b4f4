@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./ERC20Token.sol";
 import "./IDOParams.sol";
 
+// @audit scroll down to the refund() function for the fix
+
 contract NormalIDO is Ownable, Pausable {
     using Math for uint256;
     using IDOParamsLibrary for IDOParamsLibrary.IDOParams;
@@ -226,19 +228,35 @@ contract NormalIDO is Ownable, Pausable {
         return (hasBought, remainingAmount);
     }
 
+
+// apply those changes in both NormalIDO.sol and FastTrackIDO.sol
+// Introduced a batch refund mechanism in order to isolate problematic addresses and prevent huge gas usage
+// This fix fixes 2 issues at the same time
+    // 1st: for https://github.com/hats-finance/DAOsis-0x8ef21ecb2af12ce9cc0e475eec25f90a9622b4f4/issues/25
+    // 2nd: https://github.com/hats-finance/DAOsis-0x8ef21ecb2af12ce9cc0e475eec25f90a9622b4f4/issues/2
+
++    error RefundFailed(address user, uint256 index);
     // refund Token
-    function refund() external onlyOwner whenNotPaused {
++    function refund(address[] calldata _participants) external onlyOwner whenNotPaused {
+-    function refund() external onlyOwner whenNotPaused {
         require(block.timestamp > endTime, "IDO sale has not ended yet");
         require(totalRaised < maxCap, "IDO successful, no refunds!");
 
-        for (uint256 i = 0; i < participants.length; i++) {
-            address user = participants[i];
+ +       for (uint256 i = 0; i < _participants.length; i++) {
+ -       for (uint256 i = 0; i < participants.length; i++) {
+ +           address user = _participants[i];
+ -           address user = participants[i];
             uint256 userContribution = userDetails[user].buyAmount;
 
             if (userContribution > 0) {
                 userDetails[user].buyAmount = 0; 
                 (bool success, ) = payable(user).call{value: userContribution}("");
-                require(success, "Refund transfer failed");
+                
++                if(!success){
++                    revert RefundFailed(user, i);
++                }
+
+-                require(success, "Refund transfer failed");
 
                 emit Refund(user, userContribution);
             }
