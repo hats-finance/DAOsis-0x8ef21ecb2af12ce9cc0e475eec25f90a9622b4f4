@@ -21,8 +21,15 @@ contract ERC20Token is ERC20, ERC20Burnable {
     function decimals() public view virtual override returns (uint8) {
         return _decimals;
     }
-
-    function burnFrom(address account, uint256 amount) public override {
+// Depending on what the intended functionality is:
+// - The protocol wants only the owner to call this, in that case add "OnlyOwner" modifier
+    function burnFrom(address account, uint256 amount) public OnlyOwner override {
         _burn(account, amount);
     }
+}
+
+// - The protocol wants only the msg.sender to burn for himself, in that case perform a msg.sender check which looks something like this
+function burnFrom(address account, uint256 amount) public override {
+   require(msg.sender == account, "Can only burn your own tokens");
+   _burn(account, amount);
 }
