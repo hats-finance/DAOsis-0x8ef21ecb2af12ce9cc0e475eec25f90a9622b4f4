@@ -87,13 +87,13 @@ contract MasterFastIDO is Ownable, Pausable {
         );
     }
 
-    function pause() public onlyOwner {
-        _pause();
-    }
+    -function pause() public onlyOwner {
+    -    _pause();
+    -}
 
-    function unpause() public onlyOwner {
-        _unpause();
-    }
+    -function unpause() public onlyOwner {
+    -    _unpause();
+    -}
 
     function getDeploymentDetails()
         external
