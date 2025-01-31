@@ -172,6 +172,8 @@ contract FastTrackIDO is Ownable, Pausable {
                     buyCounter[msg.sender]++;
                 }
                 totalParticipants++;
+                
+                participants.push(msg.sender);
             } else if (buyCounter[msg.sender] == 1) {
                 if ((maxCap - totalRaised) >= minBuy) {
                     // require(roseAmount == minBuy, "Second buy must be minBuy!");
@@ -186,9 +188,10 @@ contract FastTrackIDO is Ownable, Pausable {
         );
         totalRaised += roseAmount;
         emit Buy(msg.sender, roseAmount);
-        participants.push(msg.sender);
         userDetails[msg.sender].buyAmount += roseAmount;
         userDetails[msg.sender].buyTimestamp = block.timestamp;
+
+        +if(msg.value > totalRoseAmount) payable(msg.sender).call{value: msg.value - totalRoseAmount}("");
 
         return true;
     }

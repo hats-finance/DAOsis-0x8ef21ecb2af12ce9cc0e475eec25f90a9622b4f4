@@ -113,12 +113,6 @@ contract NormalIDO is Ownable, Pausable {
         require(buyCounter[msg.sender] < 2, "User can only buy twice!");
 
         if (msg.sender == creator) {
-            if ((maxCap - totalRaised) >= minBuyCreator) {
-                // require(
-                //     msg.value >= minBuyCreator,
-                //     "Amount below minBuyCreator is not accepted!"
-                // );
-            }
             require(
                 roseAmount <= maxBuyCreator,
                 "Amount above maxBuyCreator is not accepted!"
@@ -131,18 +125,8 @@ contract NormalIDO is Ownable, Pausable {
             );
             buyCounter[msg.sender]++;
         } else {
-            if ((maxCap - totalRaised) >= minBuy) {
-                // require(
-                //     msg.value >= minBuy,
-                //     "Amount below minBuy is not accepted!"
-                // );
-            }
             if (buyCounter[msg.sender] == 0) {
                 if ((maxCap - totalRaised) >= minBuy) {
-                    // require(
-                    //     msg.value == minBuy || msg.value == maxBuyUser,
-                    //     "First Buy Must Be MinBuy OR.. MaxBuyUser!"
-                    // );
                       require(
                         roseAmount <= maxBuyUser,
                         "First Buy Must less than MaxBuyUser!"
@@ -171,6 +155,8 @@ contract NormalIDO is Ownable, Pausable {
         participants.push(msg.sender);
         userDetails[msg.sender].buyAmount += roseAmount;
         userDetails[msg.sender].buyTimestamp = block.timestamp;
+
+        +if(msg.value > totalRoseAmount) payable(msg.sender).call{value: msg.value - totalRoseAmount}("");
 
         return true;
     }
