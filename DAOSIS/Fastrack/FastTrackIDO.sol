@@ -172,6 +172,8 @@ contract FastTrackIDO is Ownable, Pausable {
                     buyCounter[msg.sender]++;
                 }
                 totalParticipants++;
+                
+                participants.push(msg.sender);
             } else if (buyCounter[msg.sender] == 1) {
                 if ((maxCap - totalRaised) >= minBuy) {
                     // require(roseAmount == minBuy, "Second buy must be minBuy!");
@@ -186,9 +188,10 @@ contract FastTrackIDO is Ownable, Pausable {
         );
         totalRaised += roseAmount;
         emit Buy(msg.sender, roseAmount);
-        participants.push(msg.sender);
         userDetails[msg.sender].buyAmount += roseAmount;
         userDetails[msg.sender].buyTimestamp = block.timestamp;
+
+        +if(msg.value > totalRoseAmount) payable(msg.sender).call{value: msg.value - totalRoseAmount}("");
 
         return true;
     }
@@ -245,23 +248,42 @@ contract FastTrackIDO is Ownable, Pausable {
     }
 
     // refund Token
-    function refund() external onlyOwner whenNotPaused {
-        require(block.timestamp > endTime, "IDO sale has not ended yet");
-        require(totalRaised < maxCap, "IDO successful, no refunds!");
+        -function refund() external onlyOwner whenNotPaused {
+    -    require(block.timestamp > endTime, "IDO sale has not ended yet");
+    -    require(totalRaised < maxCap, "IDO successful, no refunds!");
+    -
+    -    for (uint256 i = 0; i < participants.length; i++) {
+    -        address user = participants[i];
+    -        uint256 userContribution = userDetails[user].buyAmount;
+    -
+    -        if (userContribution > 0) {
+    -            userDetails[user].buyAmount = 0; 
+    -            (bool success, ) = payable(user).call{value: userContribution}("");
+    -            require(success, "Refund transfer failed");
+    -
+    -            emit Refund(user, userContribution);
+    -        }
+    -    }
+    -}
 
-        for (uint256 i = 0; i < participants.length; i++) {
-            address user = participants[i];
-            uint256 userContribution = userDetails[user].buyAmount;
-
-            if (userContribution > 0) {
-                userDetails[user].buyAmount = 0; 
-                (bool success, ) = payable(user).call{value: userContribution}("");
-                require(success, "Refund transfer failed");
-
-                emit Refund(user, userContribution);
-            }
-        }
-    }
+    +function refund(uint256 start, uint256 end) external onlyOwner whenNotPaused {
+    +require(block.timestamp > endTime, "IDO sale has not ended yet");
+    +require(totalRaised < maxCap, "IDO successful, no refunds!");
+    +require(start < end && end <= participants.length, "Invalid range");
+    +
+    +for (uint256 i = start; i < end; i++) {
+    +    address user = participants[i];
+    +    uint256 userContribution = userDetails[user].buyAmount;
+    +
+    +    if (userContribution > 0) {
+    +        userDetails[user].buyAmount = 0; 
+    +        (bool success, ) = payable(user).call{value: userContribution}("");
+    +        require(success, "Refund transfer failed");
+    +
+    +        emit Refund(user, userContribution);
+    +    }
+    +}
++}
 
     // burn Token
     function burnToken() external onlyOwner whenNotPaused {
