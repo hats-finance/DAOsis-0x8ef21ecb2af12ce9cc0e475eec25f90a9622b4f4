@@ -66,6 +66,7 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
     }
 
     function invest(uint256 amount, address _investor) external whenNotPaused onlyOwner {
+        +require(block.timestamp >= startTime && block.timestamp <= endTime, "Sale not active");
         require((totalRaisedUSD + amount) <= targetUSD,"Max Cap Reached");
         uint256 tokenAmount = (amount / tokenPrice) * 1e18;
         investments[_investor] += amount;
