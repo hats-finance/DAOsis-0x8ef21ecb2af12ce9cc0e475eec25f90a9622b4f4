@@ -211,17 +211,13 @@ contract NormalIDO is Ownable, Pausable {
     function isBuyed(address _address) external view returns (bool, uint256) {
         bool hasBought = buyCounter[_address] > 0;
         uint256 remainingAmount;
+        User storage user = userDetails[_address];
         if (_address == creator) {
-            User storage user = userDetails[creator];
             remainingAmount = maxBuyCreator - user.buyAmount;
-        } else {
-            if (buyCounter[_address] == 0) {
-                remainingAmount = maxBuyUser;
-            } else if (buyCounter[_address] == 1) {
-                remainingAmount = minBuy;
-            } else {
-                remainingAmount = 0;
-            }
+        }
+        // This fix will return the correct remaining amount in all three cases
+        else {
+            remainingAmount = maxBuyUser - user.buyAmount;
         }
         return (hasBought, remainingAmount);
     }
@@ -308,4 +304,3 @@ contract NormalIDO is Ownable, Pausable {
         return true;
     }
 }
-
