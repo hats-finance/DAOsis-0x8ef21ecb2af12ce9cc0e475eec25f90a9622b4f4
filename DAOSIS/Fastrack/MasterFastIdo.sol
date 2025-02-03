@@ -30,6 +30,9 @@ contract MasterFastIDO is Ownable, Pausable {
         IDOParamsLibrary.IDOParams memory idoParams,
         bytes32 _whitelistMerkleRoot
     ) payable Ownable(_admin) Pausable() {
+        // @audit Issue fix - Validate firstBuyFee against min and max buy restrictions
+        require(firstBuyFee >= minBuyCreator, "First buy fee is less than minimum buy");
+        require(firstBuyFee <= maxBuyCreator, "First buy fee exceeds maximum buy");
         require(
             msg.value >= deploymentFee + firstBuyFee,
             "Insufficient fee sent!"
