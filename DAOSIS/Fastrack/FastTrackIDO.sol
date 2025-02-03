@@ -315,6 +315,9 @@ contract FastTrackIDO is Ownable, Pausable {
     ) external onlyOwner returns (bool) {
         require(block.timestamp > endTime, "IDO sale has not ended yet");
 
+        // @audit Issue fix - Calculate the amount of total tokens and verify the inputs
+        uint totalTokens = (maxCap * 10 ** token.decimals()) / tokenPrice;
+        require(soldToken + unsoldTokens == totalTokens, "Invalid token distribution");
         ERC20Token token = ERC20Token(tokenAddress);
         require(
             token.transfer(adminAddr, soldToken),
