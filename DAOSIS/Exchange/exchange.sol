@@ -22,6 +22,7 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
 
     mapping(address => uint256) public investments;
     mapping(address => uint256) public tokensToReceive;
+    mapping(address => bool) public invested; // Create a new mapping to track unique investors
     address[] public investors;
 
     event InvestmentReceived(
@@ -72,8 +73,11 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
         tokensToReceive[_investor] += tokenAmount;
         totalRaisedUSD += amount;
         totalTokensSold += tokenAmount;
-        investors.push(_investor);
-
+        // Only add in array if investing for the first time
+        if (!invested[_investor]) {
+            investors.push(_investor);
+            invested[_investor] = true;
+        }
         emit InvestmentReceived(_investor, amount, tokenAmount);
     }
 
@@ -123,4 +127,3 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
         return tokensToReceive[investor];
     }
 }
-
