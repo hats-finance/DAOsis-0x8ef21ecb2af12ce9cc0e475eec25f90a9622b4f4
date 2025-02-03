@@ -81,7 +81,8 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
         uint length = investors.length;
         for(uint256 i=0; i<length; i++){
             address investor = investors[i];
-            require(IERC20(dssToken).transfer(investor, tokensToReceive[investor]), "Token withdrawal failed");
+            -require(IERC20(dssToken).transfer(investor, tokensToReceive[investor]), "Token withdrawal failed");
+            +require(IERC20(dssToken).transfer(investor, tokensToReceive[investor]), "Token transfer failed");
         }
     }
 
@@ -102,7 +103,8 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
         uint256 amount,
         address _tokenAddress
     ) external onlyOwner {
-       require(IERC20(_tokenAddress).transferFrom(msg.sender, address(this), amount), "Token withdrawal failed");
+       -require(IERC20(dssToken).transfer(investor, tokensToReceive[investor]), "Token withdrawal failed");
+       +require(IERC20(dssToken).transfer(investor, tokensToReceive[investor]), "Token deposit failed");
     }
 
     function pause() external onlyOwner {
