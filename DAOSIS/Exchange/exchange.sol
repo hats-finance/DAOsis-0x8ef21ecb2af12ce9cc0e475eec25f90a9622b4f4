@@ -15,6 +15,8 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
     uint256 public totalTokensSold;
     uint256 public tokensForSale;
     uint256 public targetUSD;
+    // @audit Issue Fix
+    uint8 public tokenDecimal;
     using SafeERC20 for IERC20;
 
     uint256 public startTime = 0;
@@ -38,17 +40,20 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
     
     event TokensForSaleUpdated(uint256 newTokensForSale);
 
+    // @audit Issue Fix
     constructor(
         address _dssToken,
         uint256 _tokenPrice,
         uint256 _tokensForSale,
         uint256 _targetUSD,
+        uint8 _decimal,
         address _owner
     ) Ownable(_owner) Pausable() {
         tokenPrice = _tokenPrice;
         tokensForSale = _tokensForSale;
         targetUSD = _targetUSD;
         dssToken = _dssToken;
+        tokenDecimal = _decimal;
     }
 
     function startSale(uint256 _endTime) external onlyOwner {
@@ -61,13 +66,16 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
         endTime = _endTime;
     }
 
-    function updateDssToken(address _dssToken) external onlyOwner {
+    // @audit Issue Fix
+    function updateDssToken(address _dssToken, uint8 _decimal) external onlyOwner {
         dssToken = _dssToken;
+        tokenDecimal = _decimal;
     }
 
+    // @audit Issue Fix
     function invest(uint256 amount, address _investor) external whenNotPaused onlyOwner {
         require((totalRaisedUSD + amount) <= targetUSD,"Max Cap Reached");
-        uint256 tokenAmount = (amount / tokenPrice) * 1e18;
+        uint256 tokenAmount = (amount / tokenPrice) * (10 ** tokenDecimal);
         investments[_investor] += amount;
         tokensToReceive[_investor] += tokenAmount;
         totalRaisedUSD += amount;
