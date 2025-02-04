@@ -85,6 +85,9 @@ contract NormalIDO is Ownable, Pausable {
 
         buyCounter[creator] = 1;
         totalParticipants++;
+        // @audit Issue Fix
+        require(msg.value <= idoParams.maxBuyCreator, "Amount above maxBuyCreator is not accepted!");
+        require(msg.value >= idoParams.minBuyCreator, "Amount above maxBuyCreator is not accepted!");
         totalRaised += msg.value;
         emit Buy(creator, msg.value);
 
