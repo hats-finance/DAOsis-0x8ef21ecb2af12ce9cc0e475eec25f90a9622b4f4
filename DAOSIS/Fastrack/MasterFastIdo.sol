@@ -26,6 +26,9 @@ contract MasterFastIDO is Ownable, Pausable {
         address _feeReceiver,
         uint256 maxAllowedCap,
         uint256 tokenPrice,
+        // @audit Issue fix - Add appropriate checks
+        uint256 maxBuyUserAmount,
+        uint256 maxBuyCreatorAmount,
         IDOParamsLibrary.TokenParams memory tokenParams,
         IDOParamsLibrary.IDOParams memory idoParams,
         bytes32 _whitelistMerkleRoot
@@ -49,7 +52,7 @@ contract MasterFastIDO is Ownable, Pausable {
 
         uint256 adminAmount;
         uint256 feeAmount;
-        uint256 idoAmount;
+        uint256 idoAmount;        
 
         if (!feesInToken) {
             adminAmount = (tokenParams.tokenSupply * 55) / 100;
@@ -61,6 +64,11 @@ contract MasterFastIDO is Ownable, Pausable {
             feeAmount = (tokenParams.tokenSupply * 1) / 100;
             idoAmount = tokenParams.tokenSupply - (adminAmount + feeAmount);
         }
+
+        // @audit Issue fix - Add appropriate checks
+        require(idoParams.maxBuyUser <= maxBuyUserAmount);
+        require(idoParams.maxBuyCreator <= maxBuyCreatorAmount);
+
         token.transfer(
             admin,
             adminAmount * 10**uint256(tokenParams.tokenDecimal)
