@@ -50,15 +50,16 @@ contract MasterNormalIDO is Ownable, Pausable {
         uint256 feeAmount;
         uint256 idoAmount;
 
+        // @audit Issue Fix
         if (!feesInToken) {
-            adminAmount = (tokenParams.tokenSupply * 55) / 100;
-            idoAmount = tokenParams.tokenSupply - adminAmount;
+            idoAmount = (tokenParams.tokenSupply * 55) / 100;
+            adminAmount = tokenParams.tokenSupply - idoAmount ;
             (bool success, ) = feeReceiver.call{value: deploymentFee}("");
             require(success, "Fee transfer failed!");
         } else {
-            adminAmount = (tokenParams.tokenSupply * 54) / 100;
+            idoAmount = (tokenParams.tokenSupply * 55) / 100;
             feeAmount = (tokenParams.tokenSupply * 1) / 100;
-            idoAmount = tokenParams.tokenSupply - (adminAmount + feeAmount);
+            adminAmount = tokenParams.tokenSupply - (idoAmount + feeAmount);
         }
         token.transfer(
             admin,
