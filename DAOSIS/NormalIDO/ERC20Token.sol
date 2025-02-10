@@ -6,14 +6,17 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract ERC20Token is ERC20, ERC20Burnable {
     uint8 private _decimals;
+    +address public idoContract;
 
     constructor(
         string memory tokenName,
         string memory tokenSymbol,
         uint256 tokenSupply,
         uint8 tokenDecimal
+        +address idoContract
     ) ERC20(tokenName, tokenSymbol) {
         _decimals = tokenDecimal;
+    +    idoContract = _idoContract;
         uint256 initialSupply = tokenSupply  * 10 ** uint256(_decimals);
         _mint(msg.sender, initialSupply);
     }
@@ -23,6 +26,8 @@ contract ERC20Token is ERC20, ERC20Burnable {
     }
 
     function burnFrom(address account, uint256 amount) public override {
+        +require(msg.sender == idoContract);
         _burn(account, amount);
     }
+
 }
