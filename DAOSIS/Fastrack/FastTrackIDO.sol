@@ -31,6 +31,9 @@ contract FastTrackIDO is Ownable, Pausable {
     bytes32 public whitelistMerkleRoot;
     // bool public hasCreatorBuyed;
 
+    // @audit fix - Introducing new variable to check for already refunded user
+    mapping(address => bool) refundedUser;
+
     struct User {
         uint256 buyAmount;
         uint256 buyTimestamp;
@@ -245,21 +248,23 @@ contract FastTrackIDO is Ownable, Pausable {
     }
 
     // refund Token
-    function refund() external onlyOwner whenNotPaused {
+    // @audit fix - Implementing pull-over-push mechanism such that malicious actor can only affect its own refund
+    // and not other user's refunds and thus cannot DOS the refund process
+    function refund() external whenNotPaused {
         require(block.timestamp > endTime, "IDO sale has not ended yet");
         require(totalRaised < maxCap, "IDO successful, no refunds!");
 
-        for (uint256 i = 0; i < participants.length; i++) {
-            address user = participants[i];
-            uint256 userContribution = userDetails[user].buyAmount;
+        require(!refundedUser[msg.sender], "User already refunded!");
+        uint256 userContribution = userDetails[msg.sender].buyAmount;
 
-            if (userContribution > 0) {
-                userDetails[user].buyAmount = 0; 
-                (bool success, ) = payable(user).call{value: userContribution}("");
-                require(success, "Refund transfer failed");
+        if (userContribution > 0) {
+            userDetails[msg.sender].buyAmount = 0; 
+            (bool success, ) = payable(msg.sender).call{value: userContribution}("");
+            require(success, "Refund transfer failed");
 
-                emit Refund(user, userContribution);
-            }
+            refundedUser[msg.sender] = true;
+
+            emit Refund(msg.sender, userContribution);
         }
     }
 
