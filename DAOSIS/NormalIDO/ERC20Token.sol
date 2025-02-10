@@ -22,7 +22,19 @@ contract ERC20Token is ERC20, ERC20Burnable {
         return _decimals;
     }
 
-    function burnFrom(address account, uint256 amount) public override {
-        _burn(account, amount);
-    }
+    //The fix simply follows the OpenZeppelin standard from ERC20Burnable
+    //The fix that applies access control is insufficient since it kills
+    //future integration possibilities
+    //Simply grant the needed allowances on contract levels and work from there
+
+    -function burnFrom(address account, uint256 amount) public override {
+    -    _burn(account, amount);
+    -}
+
+    //There is actually no need to even override `burnFrom()`
+    //If you simply don't add the below code, it will inherit it directly from ERC20Burnable
+    // +function burnFrom(address account, uint256 value) public virtual {
+    // +    _spendAllowance(account, msg.sender, value);
+    // +    _burn(account, value);
+    // +}
 }
