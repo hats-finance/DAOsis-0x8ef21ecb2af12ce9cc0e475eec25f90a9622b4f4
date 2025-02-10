@@ -4,11 +4,11 @@ pragma solidity ^0.8.20;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "./NormalIDO.sol";
+import "./FastTrackIDO.sol";
 import "./IDOParams.sol";
 import "./ERC20Token.sol";
 
-contract MasterNormalIDO is Ownable, Pausable {
+contract MasterFastIDO is Ownable, Pausable {
     using Math for uint256;
     using IDOParamsLibrary for IDOParamsLibrary.IDOParams;
 
@@ -16,7 +16,7 @@ contract MasterNormalIDO is Ownable, Pausable {
     address public creator;
     address public feeReceiver;
     ERC20Token public token;
-    NormalIDO public ido;
+    FastTrackIDO public ido;
 
     constructor(
         bool feesInToken,
@@ -27,7 +27,8 @@ contract MasterNormalIDO is Ownable, Pausable {
         uint256 maxAllowedCap,
         uint256 tokenPrice,
         IDOParamsLibrary.TokenParams memory tokenParams,
-        IDOParamsLibrary.IDOParams memory idoParams
+        IDOParamsLibrary.IDOParams memory idoParams,
+        bytes32 _whitelistMerkleRoot
     ) payable Ownable(_admin) Pausable() {
         require(
             msg.value >= deploymentFee + firstBuyFee,
@@ -42,7 +43,7 @@ contract MasterNormalIDO is Ownable, Pausable {
         token = new ERC20Token(
             tokenParams.tokenName,
             tokenParams.tokenSymbol,
-            tokenParams.tokenSupply,
+            tokenParams.tokenSupply,                                       
             tokenParams.tokenDecimal
         );
 
@@ -70,13 +71,14 @@ contract MasterNormalIDO is Ownable, Pausable {
                 feeAmount * 10**uint256(tokenParams.tokenDecimal)
         );
 
-        ido = new NormalIDO{value: firstBuyFee}(
+        ido = new FastTrackIDO{value: firstBuyFee}(
             creator,
             admin,
             address(token),
             tokenParams.tokenSymbol,
             tokenPrice,
-            idoParams
+            idoParams,
+            _whitelistMerkleRoot
         );
 
         token.transfer(
@@ -103,3 +105,4 @@ contract MasterNormalIDO is Ownable, Pausable {
         return (address(token), address(ido));
     }
 }
+
