@@ -93,7 +93,9 @@ contract MasterNormalIDO is Ownable, Pausable {
         _unpause();
     }
 
-    function getDeploymentDetails()
+    // @audit Issue Fix - Adding pausable modifier. When paused, no one can get deployment details
+    // indicating the owner's intention of pausing the contract
+    function getDeploymentDetails() whenNotPaused
         external
         view
         returns (address _tokenAddress, address _idoAddress)
