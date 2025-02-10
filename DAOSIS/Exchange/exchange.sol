@@ -61,7 +61,11 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
         endTime = _endTime;
     }
 
+    // @audit Issue Fix - added necessary validations
     function updateDssToken(address _dssToken) external onlyOwner {
+        require(startTime == 0, "Cannot update token after sale has started");
+        require(_dssToken != address(0), "Invalid token address");
+        require(_dssToken != dssToken, "Token address is the same");
         dssToken = _dssToken;
     }
 
