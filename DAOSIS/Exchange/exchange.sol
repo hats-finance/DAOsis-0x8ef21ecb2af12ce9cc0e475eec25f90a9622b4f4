@@ -53,6 +53,8 @@ contract CrowdFunding is Pausable, Ownable, ReentrancyGuard {
 
     function startSale(uint256 _endTime) external onlyOwner {
         require(startTime == 0, "Sale Already Started");
+        // @audit Issue Fix
+        require(_endTime > block.timestamp, "End time must be in the future");
         startTime = block.timestamp;
         endTime = _endTime;
     }
